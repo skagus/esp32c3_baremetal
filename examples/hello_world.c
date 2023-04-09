@@ -16,7 +16,7 @@ int main(void)
     _delay(20000000);   // Wait USB CDC ready.
     printf("Hello World : %s\n", __DATE__);
 
-//    printf("Const %X\n", gnConst);
+    printf("Const %X\n", gnConst);
     while(1)
     {
         printf("Loop ZI %d\n", gnVal);

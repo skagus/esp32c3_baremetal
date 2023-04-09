@@ -32,6 +32,7 @@ SECTIONS
   {
     *(.rodata .rodata.* .gnu.linkonce.r.*)
     *(.rela.data .rela.data.* .rela.gnu.linkonce.r.*)
+    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
   } > drom
 
   .rodata1 :
@@ -90,7 +91,6 @@ SECTIONS
   .sdata :
   {
     __SDATA_BEGIN__ = .;
-    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
   } > ram
