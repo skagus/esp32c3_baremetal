@@ -174,3 +174,13 @@ strtol = 0x40000454;
 strtoul = 0x40000458;
 printf = 0x40000040;
 uart_tx_one_char = 0x40000068;
+
+
+esp_pp_rom_version_get  = 0x400015b0;
+ets_update_cpu_frequency = 0x40000588;
+
+
+SYSTEM_REG = 0x600C0000;
+UART0_BASE = 0x60000000;
+LOW_POWER_BASE = 0x60008000;
+

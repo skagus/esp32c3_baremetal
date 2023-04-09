@@ -24,8 +24,7 @@ ASM_SRCS += esp32c3/vector.S
 C_OBJS_TMP = $(patsubst %.c,%.o,$(C_SRCS))
 C_OBJS := $(addprefix out/,$(C_OBJS_TMP))	# replace ".." to "."
 
-LINK_SCRIPT := -T esp32c3/esp32c3.ld
-LINK_SCRIPT += -T esp32c3/romfuncs.ld
+LINK_SCRIPT := -T esp32c3/romfuncs.ld
 LINK_SCRIPT += -T esp32c3/common.ld
 
 ASM_OBJS_TMP += $(patsubst %.S,%.o,$(ASM_SRCS))
@@ -38,12 +37,12 @@ ASM_DEPS := $(subst .o,.d,$(ASM_OBJS))
 DEPS := $(C_DEPS) $(ASM_DEPS)
 
 C_FLAGS := -march=rv32imac -mabi=ilp32 -mcmodel=medany -msmall-data-limit=8 -mno-save-restore 
-C_FLAGS += -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections
+C_FLAGS += -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -mrelax
 C_FLAGS += -O2 -g -std=gnu99 -Wall -nostdlib -nostartfiles -Wno-comment $(DEFINE) 
 #C_FLAGS += -save-temps  # 중간파일 안지운다.
 #C_FLAGS += -DDEBUG=1
 
-LD_FLAGS := -g $(LINK_SCRIPT) -nostdlib -nostartfiles -Xlinker --gc-sections -Xlinker --print-memory-usage
+LD_FLAGS := -g $(LINK_SCRIPT) -mrelax -nostdlib -nostartfiles -Xlinker --gc-sections -Xlinker --print-memory-usage
 
 TARGET_FILES := $(TARGET).elf $(TARGET).hex $(TARGET).bin $(TARGET).lst $(TARGET).map
 

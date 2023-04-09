@@ -1,6 +1,14 @@
 /*ENTRY(_start)*/
 ENTRY(_reset)
 
+MEMORY
+{
+    irom (x): org = 0x42000000, len = 4M
+    drom (r): org = 0x3C000000, len = 4M
+    ram (rw): org = 0x3FC80000, len = 320K
+    rtc_ram (rx): org = 0x50000000, len = 8K
+}
+
 SECTIONS
 {
   .header : AT(0)
@@ -10,9 +18,9 @@ SECTIONS
     LONG(0xaedb041d)
   } > irom
 
-  .text.entry ORIGIN(irom) + 8 :
+  .text.entry :
   {
-    KEEP(*(.text.entry))
+    *(.text.entry)
   } > irom
 
   .text :
@@ -20,7 +28,8 @@ SECTIONS
     *(.text .stub .text.* .gnu.linkonce.t.*)
     *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
     *(.gnu.warning)
-  }
+  } > irom
+ 
   . = ALIGN(4);
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
@@ -32,7 +41,6 @@ SECTIONS
   actually, DROM and IROM is same memory space.
   but to access via D bus, locate it to DROM.
   So, not to overlap, shift _irom_size from DROM origin.
-
   */
   _drom_start = ORIGIN(drom) + _irom_size;
   .rodata _drom_start : AT(_irom_size)
@@ -44,7 +52,7 @@ SECTIONS
   .rodata1 :
   {
     *(.rodata1)
-  }
+  } > drom
 
   .init_array :
   {
@@ -52,7 +60,7 @@ SECTIONS
     KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
     KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
     PROVIDE_HIDDEN (__init_array_end = .);
-  }
+  } > drom
 
   .fini_array :
   {
@@ -60,7 +68,7 @@ SECTIONS
     KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
     KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  }
+  } > drom
 
   .ctors :
   {
@@ -69,7 +77,7 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
     KEEP (*(SORT(.ctors.*)))
     KEEP (*(.ctors))
-  }
+  } > drom
 
   .dtors :
   {
@@ -78,7 +86,7 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
     KEEP (*(SORT(.dtors.*)))
     KEEP (*(.dtors))
-  }
+  } > drom
 
   _drom_size = . - _drom_start;
 
@@ -88,12 +96,17 @@ SECTIONS
     _sdata = .;PROVIDE (sdata = .);
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
+    *(.srodata.cst16) 
+    *(.srodata.cst8) 
+    *(.srodata.cst4) 
+    *(.srodata.cst2) 
+    *(.srodata .srodata.*)
   } > ram
-  .data ORIGIN(ram) : 
+  .data : 
   {
     *(.data .data.* .gnu.linkonce.d.*)
-    *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*)
+    *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) 
+    *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*)
     SORT(CONSTRUCTORS)
   } > ram
   .data1 :
@@ -121,11 +134,6 @@ SECTIONS
   } > ram
   . = ALIGN(4);
   _ebss = .; PROVIDE (ebss = .);
-
-  /*
-  __global_pointer$ = MIN(__SDATA_BEGIN__ + 0x800,
-                          MAX(__DATA_BEGIN__ + 0x800, __BSS_END__ - 0x800));
-*/
   _end = .; PROVIDE (end = .);
 
   /* Stack */
