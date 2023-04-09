@@ -6,6 +6,11 @@
 
      
  _reset:
+        la      sp, __stack_top
+.option push
+.option norelax        
+        la      gp, __global_pointer$
+.option pop
         addi    sp,sp,-32
         sw      ra,28(sp)
         sw      s0,24(sp)
@@ -13,7 +18,7 @@
         /*lui+addi  for loading a 32-bit constant into a register. 
         Used to surpass the signed problem of a single addi*/
         /*call    soc_init*/
-        li      a5,0x600c0000
+        li      a5,0x600c0000  /* Cpu Conf.*/
         addi    a5,a5,8
         lw      a4,0(a5)
         li      a5,0x600c0000
@@ -46,6 +51,7 @@
         sw      a5,-24(s0)
 
         /* wtd disable */
+
         li      a5,0x60008000
         addi    a5,a5,168
         li      a4,0x50d84000
@@ -87,7 +93,8 @@
         addi    a5,a5,0x48
         sw      zero,0(a5)
         li      a5,0
-        
+
+
         call    startup
 .L4:
         j       .L4

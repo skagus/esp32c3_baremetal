@@ -39,7 +39,6 @@ SECTIONS
   {
     *(.rodata .rodata.* .gnu.linkonce.r.*)
     *(.rela.data .rela.data.* .rela.gnu.linkonce.r.*)
-    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
   } > drom
 
   .rodata1 :
@@ -83,25 +82,28 @@ SECTIONS
 
   _drom_size = . - _drom_start;
 
-  .data ORIGIN(ram) : AT(_irom_size + _drom_size) 
+  .sdata : AT(_irom_size + _drom_size) 
   {
+    __global_pointer$ = . + 0x800;
     _sdata = .;PROVIDE (sdata = .);
+    *(.sdata .sdata.* .gnu.linkonce.s.*)
+    *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
+    *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
+  } > ram
+  .data ORIGIN(ram) : 
+  {
     *(.data .data.* .gnu.linkonce.d.*)
     *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*)
-    *(.sdata .sdata.* .gnu.linkonce.s.*)
     SORT(CONSTRUCTORS)
   } > ram
   .data1 :
   {
     *(.data1)
   } > ram
-  .sdata :
-  {
-    *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-  } > ram
+
   . = ALIGN(4);
   _edata = .; PROVIDE (edata = .);
-  _data_lma = ORIGIN(drom) + LOADADDR(.data);
+  _data_lma = ORIGIN(drom) + LOADADDR(.sdata);
   _data_size = _edata - _sdata; PROVIDE (data_size = _edata - _sdata);
 
   _sbss = .; PROVIDE (sbss = .);
@@ -124,7 +126,6 @@ SECTIONS
   __global_pointer$ = MIN(__SDATA_BEGIN__ + 0x800,
                           MAX(__DATA_BEGIN__ + 0x800, __BSS_END__ - 0x800));
 */
-  __global_pointer$ = _sdata + 0x800;
   _end = .; PROVIDE (end = .);
 
   /* Stack */

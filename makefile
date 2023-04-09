@@ -93,7 +93,8 @@ $(TARGET).bin: $(TARGET).elf
 
 $(TARGET).lst: $(TARGET).elf
 	@echo "Making:" $@
-	@$(GNU_PREF)objdump -d --source --all-headers --demangle --line-numbers --wide $< > $@
+	@$(GNU_PREF)objdump -d --visualize-jumps --source --all-headers --demangle --wide $< > $@
+#	@$(GNU_PREF)objdump -d --visualize-jumps --source --all-headers --demangle --line-numbers --wide $< > $@
 
 $(TARGET).size: $(TARGET).elf
 	@$(GNU_PREF)size --format=berkeley $<
