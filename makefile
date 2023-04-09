@@ -15,6 +15,7 @@ LIBS :=
 #LIBS += -L. 
 
 C_SRCS := examples/hello_world.c
+C_SRCS += examples/extra.c
 
 ASM_SRCS := esp32c3/boot.S
 ASM_SRCS += esp32c3/vector.S
