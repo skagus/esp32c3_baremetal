@@ -12,21 +12,7 @@
         addi    s0,sp,32
         /*lui+addi  for loading a 32-bit constant into a register. 
         Used to surpass the signed problem of a single addi*/
-        lui     a5,%hi(_sbss)
-        addi    a5,a5,%lo(_sbss)
-        sw      a5,-20(s0)
-        j       .L2
-.L3:
-        lw      a5,-20(s0)
-        addi    a4,a5,1
-        sw      a4,-20(s0)
-        sb      zero,0(a5)
-.L2:
-        lw      a4,-20(s0)
-        lui     a5,%hi(_ebss)
-        addi    a5,a5,%lo(_ebss)
-        bltu    a4,a5,.L3
-                /*call    soc_init*/
+        /*call    soc_init*/
         li      a5,0x600c0000
         addi    a5,a5,8
         lw      a4,0(a5)
@@ -58,6 +44,7 @@
         csrrw zero, mtvec, a5
         csrr a5, mtvec
         sw      a5,-24(s0)
+
         /* wtd disable */
         li      a5,0x60008000
         addi    a5,a5,168
@@ -101,6 +88,6 @@
         sw      zero,0(a5)
         li      a5,0
         
-        call    main
+        call    startup
 .L4:
         j       .L4

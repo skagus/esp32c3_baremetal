@@ -27,6 +27,13 @@ SECTIONS
   PROVIDE (etext = .);
   _irom_size = . - _irom_start;
   
+  /**
+  drom is for read only data. 
+  actually, DROM and IROM is same memory space.
+  but to access via D bus, locate it to DROM.
+  So, not to overlap, shift _irom_size from DROM origin.
+
+  */
   _drom_start = ORIGIN(drom) + _irom_size;
   .rodata _drom_start : AT(_irom_size)
   {
@@ -78,10 +85,10 @@ SECTIONS
 
   .data ORIGIN(ram) : AT(_irom_size + _drom_size) 
   {
-    _data_start = .;
-    __DATA_BEGIN__ = .;
+    _sdata = .;PROVIDE (sdata = .);
     *(.data .data.* .gnu.linkonce.d.*)
     *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*)
+    *(.sdata .sdata.* .gnu.linkonce.s.*)
     SORT(CONSTRUCTORS)
   } > ram
   .data1 :
@@ -90,34 +97,34 @@ SECTIONS
   } > ram
   .sdata :
   {
-    __SDATA_BEGIN__ = .;
-    *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
   } > ram
   . = ALIGN(4);
   _edata = .; PROVIDE (edata = .);
   _data_lma = ORIGIN(drom) + LOADADDR(.data);
-  _data_size = _edata - _data_start;
+  _data_size = _edata - _sdata; PROVIDE (data_size = _edata - _sdata);
 
-  __bss_start = .;
-  _sbss = .;
-  .sbss           :
+  _sbss = .; PROVIDE (sbss = .);
+  .sbss :
   {
     *(.dynsbss)
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
   } > ram
-  .bss            :
+  .bss :
   {
    *(.dynbss)
    *(.bss .bss.* .gnu.linkonce.b.*)
    *(COMMON)
   } > ram
   . = ALIGN(4);
-  __BSS_END__ = .;
-  _ebss = .;
+  _ebss = .; PROVIDE (ebss = .);
+
+  /*
   __global_pointer$ = MIN(__SDATA_BEGIN__ + 0x800,
                           MAX(__DATA_BEGIN__ + 0x800, __BSS_END__ - 0x800));
+*/
+  __global_pointer$ = _sdata + 0x800;
   _end = .; PROVIDE (end = .);
 
   /* Stack */

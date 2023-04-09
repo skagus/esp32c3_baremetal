@@ -16,6 +16,7 @@ LIBS :=
 
 C_SRCS := examples/hello_world.c
 C_SRCS += examples/extra.c
+C_SRCS += esp32c3/startup.c
 
 ASM_SRCS := esp32c3/boot.S
 ASM_SRCS += esp32c3/vector.S
@@ -56,6 +57,12 @@ $(OUTDIR)/examples/%.o: examples/%.c
 	@echo "CC:" $<
 	$(DIR_GUARD)
 	$(CC) $(C_FLAGS) $(INC) -MMD -MP -MF$(@:%.o=%.d) -MT$(@) -c $< -o $@
+
+$(OUTDIR)/esp32c3/%.o: esp32c3/%.c
+	@echo "CC:" $<
+	$(DIR_GUARD)
+	$(CC) $(C_FLAGS) $(INC) -MMD -MP -MF$(@:%.o=%.d) -MT$(@) -c $< -o $@
+
 
 $(OUTDIR)/esp32c3/%.o: esp32c3/%.S
 	@echo "ASM:" $<
