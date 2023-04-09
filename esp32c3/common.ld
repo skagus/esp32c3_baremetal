@@ -86,14 +86,14 @@ SECTIONS
   .data1 :
   {
     *(.data1)
-  }
+  } > ram
   .sdata :
   {
     __SDATA_BEGIN__ = .;
     *(.srodata.cst16) *(.srodata.cst8) *(.srodata.cst4) *(.srodata.cst2) *(.srodata .srodata.*)
     *(.sdata .sdata.* .gnu.linkonce.s.*)
     *(.sdata2 .sdata2.* .gnu.linkonce.s2.*)
-  }
+  } > ram
   . = ALIGN(4);
   _edata = .; PROVIDE (edata = .);
   _data_lma = ORIGIN(drom) + LOADADDR(.data);
@@ -106,13 +106,13 @@ SECTIONS
     *(.dynsbss)
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
-  }
+  } > ram
   .bss            :
   {
    *(.dynbss)
    *(.bss .bss.* .gnu.linkonce.b.*)
    *(COMMON)
-  }
+  } > ram
   . = ALIGN(4);
   __BSS_END__ = .;
   _ebss = .;
@@ -127,7 +127,7 @@ SECTIONS
     __stack_top = ORIGIN(ram) + LENGTH(ram);
     __stack_size_min = 0x4000;
     ASSERT(__stack_bottom + __stack_size_min < __stack_top, "Error: no space for stack");
-  }
+  } > ram
 
   /* Stabs debugging sections.  */
   .stab          0 : { *(.stab) }
