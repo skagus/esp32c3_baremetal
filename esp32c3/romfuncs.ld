@@ -9,8 +9,6 @@
 /***************************************
  Group libgcc
  ***************************************/
-
-/* Functions */
 __absvdi2 = 0x40000764;
 __absvsi2 = 0x40000768;
 __adddf3 = 0x4000076c;
@@ -106,8 +104,6 @@ __unordsf2 = 0x400008c8;
 /***************************************
  Group newlib
  ***************************************/
-
-/* Functions */
 memset = 0x40000354;
 memcpy = 0x40000358;
 memmove = 0x4000035c;
@@ -119,6 +115,8 @@ strncmp = 0x40000370;
 strlen = 0x40000374;
 strstr = 0x40000378;
 bzero = 0x4000037c;
+_isatty_r = 0x40000380;
+sbrk = 0x40000384;
 isalnum = 0x40000388;
 isalpha = 0x4000038c;
 isascii = 0x40000390;
@@ -172,7 +170,30 @@ atoi = 0x4000044c;
 atol = 0x40000450;
 strtol = 0x40000454;
 strtoul = 0x40000458;
-printf = 0x40000040;
+fflush = 0x4000045c;
+
+_fflush_r = 0x40000460;
+_fwalk = 0x40000464;
+_fwalk_reent = 0x40000468;
+__smakebuf_r = 0x4000046c;
+__swhatbuf_r = 0x40000470;
+__swbuf_r = 0x40000474;
+__swbuf = 0x40000478;
+__swsetup_r = 0x4000047c;
+__sprint_r = 0x40000480;
+_fiprintf_r = 0x40000484;
+_fprintf_r = 0x40000488;
+_printf_common = 0x4000048c;
+_printf_i = 0x40000490;
+_vfiprintf_r = 0x40000494;
+_vfprintf_r = 0x40000498;
+fiprintf = 0x4000049c;
+fprintf = 0x400004a0;
+printf = 0x400004a4;
+vfiprintf = 0x400004a8;
+vfprintf = 0x400004ac;
+
+
 uart_tx_one_char = 0x40000068;
 
 
