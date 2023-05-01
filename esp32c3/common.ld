@@ -18,9 +18,9 @@ SECTIONS
     LONG(0xaedb041d)
   } > irom
 
-  .text.entry :
+  .text.entry ORIGIN(irom) + 8 :
   {
-    *(.text.entry)
+    KEEP(*(.text.entry))
   } > irom
 
   .text :
@@ -43,6 +43,7 @@ SECTIONS
   So, not to overlap, shift _irom_size from DROM origin.
   */
   _drom_start = ORIGIN(drom) + _irom_size;
+  /*_drom_start = .;*/
   .rodata _drom_start : AT(_irom_size)
   {
     *(.rodata .rodata.* .gnu.linkonce.r.*)

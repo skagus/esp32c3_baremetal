@@ -6,6 +6,10 @@
 
      
  _reset:
+        .option push
+        .option norelax
+        la gp, __global_pointer$
+        .option pop
         /*lui+addi  for loading a 32-bit constant into a register. 
         Used to surpass the signed problem of a single addi*/
         /*call    soc_init*/
@@ -25,7 +29,7 @@
         sw      a4,0(a5)
 
 /* set mstatus.mie */
-        csrw   mstatus, 0x8
+#        csrw   mstatus, 0x8
 
 /* call __call_ets_update_cpu_frequency(160) */
         li      a5,0x40000000
