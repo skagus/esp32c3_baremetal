@@ -92,7 +92,8 @@ $(TARGET).bin: $(TARGET).elf
 
 $(TARGET).lst: $(TARGET).elf
 	@echo "Making:" $@
-	@$(GNU_PREF)objdump -d --visualize-jumps --source --all-headers --demangle --wide $< > $@
+	@$(GNU_PREF)objdump -d --source --all-headers --demangle --wide $< > $@
+#	@$(GNU_PREF)objdump -d --visualize-jumps --source --all-headers --demangle --wide $< > $@
 #	@$(GNU_PREF)objdump -d --visualize-jumps --source --all-headers --demangle --line-numbers --wide $< > $@
 
 $(TARGET).size: $(TARGET).elf
@@ -105,5 +106,8 @@ clean:
 ifneq (,$(wildcard $(OUTDIR)/*))
 	@$(RM) $(OUTDIR)/*
 endif
+
+stat:
+	python isa_stat.py
 
 rebuild: clean all
