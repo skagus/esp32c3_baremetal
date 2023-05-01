@@ -38,7 +38,7 @@ DEPS := $(C_DEPS) $(ASM_DEPS)
 
 C_FLAGS := -march=rv32imac -mabi=ilp32 -mcmodel=medany -msmall-data-limit=8 -mno-save-restore 
 C_FLAGS += -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -mrelax
-C_FLAGS += -O2 -g -std=gnu99 -Wall -nostdlib -nostartfiles -Wno-comment $(DEFINE) 
+C_FLAGS += -O0 -g -std=gnu99 -Wall -nostdlib -nostartfiles -Wno-comment $(DEFINE) 
 #C_FLAGS += -save-temps  # 중간파일 안지운다.
 #C_FLAGS += -DDEBUG=1
 
