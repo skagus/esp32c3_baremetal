@@ -5,7 +5,8 @@ isa_pat = re.compile(i_pat, re.IGNORECASE)
 p_pat = '\t([0-9a-z,\-\(\)]+)'
 param_pat = re.compile(p_pat, re.IGNORECASE)
 
-file_name = "out/baremetal"
+file_name = "sample"
+#file_name = "out/baremetal"
 
 def extract(fname):
     fpIn = open(fname+'.lst', 'r')
@@ -72,6 +73,12 @@ def pre_proc(fname):
 #    print(aIns)
     return aIns, aId2Ins
 
+def print_name_num(aList, aTr):
+    for item in aList:
+        print(aTr[item[0]], item[1])
+    print("Total used cmd: ", len(aList))
+    return
+
 def stat_freq(fname):
     print("Frequency analysis")
     aIns, aTr = pre_proc(fname)
@@ -90,8 +97,11 @@ def stat_freq(fname):
 #        print("inst: ", inst, " count: ", count)
 
 #   print(stat_list)
-    freq_sorted = sorted(stat_list, key=lambda aa:aa[1], reverse=True);
-    print(freq_sorted)
+    freq_sorted = sorted(stat_list, key=lambda aa:aa[1], reverse=True)
+#    print(freq_sorted)
+    print("===== Sorted Freq ======")
+    print_name_num(freq_sorted, aTr)
+#    list(map(lambda x: aTr[x[0]], x[1], freq_sorted))
 
 
 # 연속된 두개의 instruction을 한개로 merge해 보려는 시도.
@@ -117,9 +127,6 @@ def stat_merge(fname):
 
     return
 
-def _pat_name(aIns, aNames):
-    return '_'.join(list(map(lambda x: aNames[x], aIns)))
-     
 # Command pattern찾기.(paramter는 제외)
 def stat_cmd_pat(fname, pat_len):
     aIns, aTr = pre_proc(fname)
@@ -148,46 +155,18 @@ def stat_cmd_pat(fname, pat_len):
         print(szPatName, '\t', nCnt)
 
 #    print(aAccDone)
+################
+    stat_list =[]
+    for pat, count in aAccDone.items() :
+        stat_list.append((pat, count))
+
+    freq_sorted = sorted(stat_list, key=lambda aa:aa[1], reverse=True)
+    print("====> Total used cmd: ", len(freq_sorted))
+    for item in freq_sorted:
+        print(item[0], item[1])
+
 
 extract(file_name)
 #stat_freq(file_name)
 #stat_merge(file_name)
-stat_cmd_pat(file_name, 3)
-
-
-'''
-f = open(file_name, 'r')
-
-isa_count = {}   # dictionary.
-
-while 1:
-    line = f.readline()
-    if not line:    # Check line is.
-        break
-
-    mt = repat.match(line)
-    if (mt == None):    # Check the pattern isn't meet.
-#        print("NMAT:", line)
-        continue
-    
-    all = mt.groups()
-    addr = all[0]
-    binary = all[1]
-    inst = all[2]
-
-    if inst in isa_count :
-        isa_count[inst] = isa_count[inst] + 1
-    else:
-        isa_count[inst] = 1
-
-stat_list =[]
-for inst, count in isa_count.items() :
-    #print("inst: ", inst, " count: ", count)
-    stat_list.append((inst, count))
-
-#print(stat_list)
-
-freq_sorted = sorted(stat_list, key=lambda aa:aa[1], reverse=True);
-
-print(freq_sorted)
-'''
+stat_cmd_pat(file_name, 2)
