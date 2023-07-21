@@ -1,8 +1,8 @@
 MEMORY
 {
-    irom (x): org = 0x42000000, len = 4M    /* 0x4200_0000 ~ 0x4240_0000   */
-    drom (r): org = 0x3C000000, len = 4M    /* 0x3C00_0000 ~ 0x3C40_0000   */
-    ram (rw): org = 0x3FC80000, len = 320K  /* 0x3FC8_0000 ~ 0x3FCD_0000 */
+    irom (x): org = 0x42000000, len = 4M		/* 0x4200_0000 ~ 0x4240_0000   */
+    drom (r): org = 0x3C000000, len = 4M		/* 0x3C00_0000 ~ 0x3C40_0000   */
+    ram (rw): org = 0x3FC80000, len = 320K		/* 0x3FC8_0000 ~ 0x3FCD_0000 */
     rtc_ram (rx): org = 0x50000000, len = 8K
 }
 

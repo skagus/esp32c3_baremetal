@@ -38,13 +38,14 @@ DEPS := $(C_DEPS) $(ASM_DEPS)
 
 C_FLAGS := -march=rv32imac -mabi=ilp32 -mcmodel=medany -msmall-data-limit=8 -mno-save-restore 
 C_FLAGS += -fmessage-length=0 -fsigned-char -ffunction-sections -fdata-sections -mrelax
-C_FLAGS += -O0 -g -std=gnu99 -Wall -nostdlib -nostartfiles -Wno-comment $(DEFINE) 
+C_FLAGS += -O0 -g -std=gnu99 -Wall -nostdlib -nostartfiles -Wno-comment $(DEFINE)
 #C_FLAGS += -save-temps  # 중간파일 안지운다.
 #C_FLAGS += -DDEBUG=1
 
+#LD_FLAGS := -g $(LINK_SCRIPT) -mrelax -nostdlib -nostartfiles -Xlinker --gc-sections -Xlinker --print-memory-usage
 LD_FLAGS := -g $(LINK_SCRIPT) -mrelax -nostdlib -nostartfiles -Xlinker --gc-sections -Xlinker --print-memory-usage
 
-TARGET_FILES := $(TARGET).elf $(TARGET).hex $(TARGET).bin $(TARGET).lst $(TARGET).map
+TARGET_FILES := $(TARGET).elf $(TARGET).hex $(TARGET).lst $(TARGET).map
 
 DIR_GUARD = @mkdir -p $(@D)
 
@@ -98,6 +99,8 @@ $(TARGET).lst: $(TARGET).elf
 
 $(TARGET).size: $(TARGET).elf
 	@$(GNU_PREF)size --format=berkeley $<
+	@echo "Bin Making idf> esptool.py --chip esp32c3 elf2image .\baremetal.elf"
+	@echo "FW download --> flash download tool with dio / 20MHz / do not check DoNotChgBin, address 0x0"
 
 # Other Targets
 clean:
@@ -106,6 +109,13 @@ clean:
 ifneq (,$(wildcard $(OUTDIR)/*))
 	@$(RM) $(OUTDIR)/*
 endif
+
+# esptool.py --chip esp32c3 image_info .\baremetal.bin
+# esptool.py --chip esp32c3 elf2image .\baremetal.elf
+# esptool.py --chip esp32c3 -p COM17 write_flash 0 .\baremetal.bin
+# esptool.py --chip esp32c3 -p COM17  write_flash 
+#					--flash_freq 20m --flash_mode dio 0 .\baremetal.bin
+# DoNotChgBin in download tool.
 
 stat:
 	python isa_stat.py

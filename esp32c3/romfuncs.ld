@@ -193,13 +193,16 @@ printf = 0x400004a4;
 vfiprintf = 0x400004a8;
 vfprintf = 0x400004ac;
 
-
 uart_tx_one_char = 0x40000068;
+uart_tx_flush = 0x40000080;
+usb_uart_tx_one_char = 0x400008d8;
+usb_uart_tx_flush = 0x400008d4;
 
+ets_install_uart_printf = 0x40000048;
+ets_printf = 0x40000040;
 
 esp_pp_rom_version_get  = 0x400015b0;
 ets_update_cpu_frequency = 0x40000588;
-
 
 SYSTEM_REG = 0x600C0000;
 UART0_BASE = 0x60000000;

@@ -23,7 +23,7 @@ _vector_table:
     .global _panic_handler
     .type _panic_handler, @function
 _panic_handler:
-    j _panic_handler
+    j EXC_IRQHandler
     .size  _panic_handler, .-_panic_handler
 
     /* This is the interrupt handler.

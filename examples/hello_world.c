@@ -1,33 +1,31 @@
 #include <stdio.h>
 
-void mydelay(int nCnt)
-{
-    while(--nCnt > 0)
-    {
-        asm("nop\r\n");
-    }
-}
+#define printf(...) 	ets_printf(__VA_ARGS__)
 
-extern int gnSBss;
-extern const unsigned int gnConst;
+
 extern int gnSData;
 
+
+void mydelay(int nCnt)
+{
+	while (--nCnt > 0)
+	{
+		asm("nop\r\n");
+	}
+}
+
+int gnCnt = 30;
 int main(void)
 {
-    int nLoop = 10;
-    mydelay(20000000);   // Wait USB CDC ready.
-    printf("Hello World : %s\n", __DATE__);
+	int nLoop = 10;
+	mydelay(1000000);
+	printf("Hello World : %s\n", __DATE__);
 
-    printf("Const   0x%X, %p\n", gnConst, &gnConst);
-    printf("Data:   0x%X, %p\n", gnSData, &gnSData);
-    printf("BSS :   %p\n", &gnSBss);
-
-    while(nLoop--)
-    {
-        printf("Loop ZI %d\n", gnSBss);
-        mydelay(20000000);
-        gnSBss ++;
-    }
-    while(1);
-    return 0;
+	while (gnCnt--)
+	{
+		printf("Loop : %d, %X, %X\n", gnCnt, &gnSData, gnSData);
+		mydelay(1000000);
+	}
+	while (1);
+	return 0;
 }

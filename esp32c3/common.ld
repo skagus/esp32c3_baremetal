@@ -1,59 +1,62 @@
 /*ENTRY(_start)*/
 ENTRY(_reset)
 
+
 MEMORY
 {
-    irom (x): org = 0x42000000, len = 4M
-    drom (r): org = 0x3C000000, len = 4M
-    ram (rw): org = 0x3FC80000, len = 320K
-    rtc_ram (rx): org = 0x50000000, len = 8K
+  /*iache  (rwx)  : ORIGIN = 0X4037c000, LENGTH = 16k*/
+  /*iram   (rwx)  : ORIGIN = 0x40380400, LENGTH = 32k */
+  iram   (rwx)  : ORIGIN = 0x40380000, LENGTH = 32k 
+  dram   (rw)   : ORIGIN = 0x3FC80000 + LENGTH(iram), LENGTH = 128k
 }
 
 SECTIONS
 {
+	/*
   .header : AT(0)
   {
-    _irom_start = .;
-    LONG(0xaedb041d)
-    LONG(0xaedb041d)
-  } > irom
-
-  .text.entry ORIGIN(irom) + 8 :
+    _iram_start = .;
+	LONG(0xaedb041d)
+	LONG(0xaedb041d)
+  } > iram
+*/
+  .text.entry : AT(0)
   {
+	_iram_start = .;
     KEEP(*(.text.entry))
-  } > irom
+  } > iram
 
   .text :
   {
     *(.text .stub .text.* .gnu.linkonce.t.*)
     *(.rela.text .rela.text.* .rela.gnu.linkonce.t.*)
     *(.gnu.warning)
-  } > irom
+  } > iram
  
   . = ALIGN(4);
   PROVIDE (__etext = .);
   PROVIDE (_etext = .);
   PROVIDE (etext = .);
-  _irom_size = . - _irom_start;
+  _iram_size = . - _iram_start;
   
   /**
-  drom is for read only data. 
-  actually, DROM and IROM is same memory space.
-  but to access via D bus, locate it to DROM.
-  So, not to overlap, shift _irom_size from DROM origin.
+  dram is for read only data. 
+  actually, dram and iram is same memory space.
+  but to access via D bus, locate it to dram.
+  So, not to overlap, shift _iram_size from dram origin.
   */
-  _drom_start = ORIGIN(drom) + _irom_size;
+  _dram_start = ORIGIN(dram) + _iram_size;
   /*_drom_start = .;*/
-  .rodata _drom_start : AT(_irom_size)
+  .rodata _dram_start : AT(_iram_size)
   {
     *(.rodata .rodata.* .gnu.linkonce.r.*)
     *(.rela.data .rela.data.* .rela.gnu.linkonce.r.*)
-  } > drom
+  } > dram
 
   .rodata1 :
   {
     *(.rodata1)
-  } > drom
+  } > dram
 
   .init_array :
   {
@@ -61,7 +64,7 @@ SECTIONS
     KEEP (*(SORT_BY_INIT_PRIORITY(.init_array.*) SORT_BY_INIT_PRIORITY(.ctors.*)))
     KEEP (*(.init_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .ctors))
     PROVIDE_HIDDEN (__init_array_end = .);
-  } > drom
+  } > dram
 
   .fini_array :
   {
@@ -69,7 +72,7 @@ SECTIONS
     KEEP (*(SORT_BY_INIT_PRIORITY(.fini_array.*) SORT_BY_INIT_PRIORITY(.dtors.*)))
     KEEP (*(.fini_array EXCLUDE_FILE (*crtbegin.o *crtbegin?.o *crtend.o *crtend?.o ) .dtors))
     PROVIDE_HIDDEN (__fini_array_end = .);
-  } > drom
+  } > dram
 
   .ctors :
   {
@@ -78,7 +81,7 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .ctors))
     KEEP (*(SORT(.ctors.*)))
     KEEP (*(.ctors))
-  } > drom
+  } > dram
 
   .dtors :
   {
@@ -87,11 +90,11 @@ SECTIONS
     KEEP (*(EXCLUDE_FILE (*crtend.o *crtend?.o ) .dtors))
     KEEP (*(SORT(.dtors.*)))
     KEEP (*(.dtors))
-  } > drom
+  } > dram
 
-  _drom_size = . - _drom_start;
+  _dram_size = . - _dram_start;
 
-  .sdata : AT(_irom_size + _drom_size) 
+  .sdata : AT(_iram_size + _dram_size) 
   {
     __global_pointer$ = . + 0x800;
     _sdata = .;PROVIDE (sdata = .);
@@ -102,22 +105,22 @@ SECTIONS
     *(.srodata.cst4) 
     *(.srodata.cst2) 
     *(.srodata .srodata.*)
-  } > ram
+  } > dram
   .data : 
   {
     *(.data .data.* .gnu.linkonce.d.*)
     *(.data.rel.ro.local* .gnu.linkonce.d.rel.ro.local.*) 
     *(.data.rel.ro .data.rel.ro.* .gnu.linkonce.d.rel.ro.*)
     SORT(CONSTRUCTORS)
-  } > ram
+  } > dram
   .data1 :
   {
     *(.data1)
-  } > ram
+  } > dram
 
   . = ALIGN(4);
   _edata = .; PROVIDE (edata = .);
-  _data_lma = ORIGIN(drom) + LOADADDR(.sdata);
+  _data_lma = ORIGIN(iram) + LOADADDR(.sdata);
   _data_size = _edata - _sdata; PROVIDE (data_size = _edata - _sdata);
 
   _sbss = .; PROVIDE (sbss = .);
@@ -126,13 +129,13 @@ SECTIONS
     *(.dynsbss)
     *(.sbss .sbss.* .gnu.linkonce.sb.*)
     *(.scommon)
-  } > ram
+  } > dram
   .bss :
   {
    *(.dynbss)
    *(.bss .bss.* .gnu.linkonce.b.*)
    *(COMMON)
-  } > ram
+  } > dram
   . = ALIGN(4);
   _ebss = .; PROVIDE (ebss = .);
   _end = .; PROVIDE (end = .);
@@ -141,10 +144,10 @@ SECTIONS
   .stack :
   {
     __stack_bottom = .;
-    __stack_top = ORIGIN(ram) + LENGTH(ram);
+    __stack_top = ORIGIN(dram) + LENGTH(dram) - 4;
     __stack_size_min = 0x4000;
     ASSERT(__stack_bottom + __stack_size_min < __stack_top, "Error: no space for stack");
-  } > ram
+  } > dram
 
   /* Stabs debugging sections.  */
   .stab          0 : { *(.stab) }
