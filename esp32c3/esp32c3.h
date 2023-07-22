@@ -81,10 +81,10 @@ static inline void spin(volatile unsigned long count)
 
 static inline uint64_t systick(void)
 {
-	REG(C3_SYSTIMER + 0x4) = BIT(30); // TRM 10.5
+	REG(C3_SYSTIMER + 0x4) = BIT(30); // read out system timer value.
 	spin(1);
-	return ((uint64_t)((uint64_t)REG(C3_SYSTIMER + 4*16) << 32) 
-					| REG(C3_SYSTIMER + 4*17));
+	return ((uint64_t)REG(C3_SYSTIMER + 0x40) << 32)  |
+			(uint64_t)REG(C3_SYSTIMER + 0x44);
 }
 
 static inline uint64_t uptime_us(void)

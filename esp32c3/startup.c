@@ -3,94 +3,82 @@
 #include <string.h>
 #include <stdlib.h>
 #include "esp32c3.h"
+#define SECTION_CHECK		(0)
+
+#define printf(...)			ets_printf(__VA_ARGS__)
+
 extern int main();
-
-extern unsigned char etext;
-extern unsigned char sdata;
-extern unsigned char edata;
-extern unsigned char sbss;
-extern unsigned char ebss;
-
-extern unsigned int _data_lma;
-
-extern unsigned char _vector_table;
-
-extern void _delay(int nCnt);
-
-#if 0
-extern void _reset();
-void __attribute__((section (".text.entry"))) start() 
-{
-    _reset();
-}
-#endif
-
-typedef struct {
-    int     baut_rate;
-    int data_bits;
-    int  exist_parity;
-    int   parity;    // chip size in byte
-    int  stop_bits;
-    int     flow_ctrl;
-    uint8_t          buff_uart_no;  //indicate which uart use tx/rx buffer
-} UartDevice;
-
-extern void mydelay(int nCnt);
 extern int uart_tx_one_char(char nCh);
 extern int usb_uart_tx_one_char(char nCh);
 extern void disable_default_watchdog();
 extern void uart_tx_flush(uint8_t uart_no);
-
 extern void ets_install_uart_printf();
 extern int ets_printf(const char *fmt, ...);
 
+extern unsigned char sbss;
+extern unsigned char ebss;
+
+#if (SECTION_CHECK == 1)
+extern unsigned char sdata;
+extern unsigned char edata;
+
+extern int gnSData;
+extern int gnSBss;
+extern unsigned int gnConst;
+
 int gnData = 5;
 int gnZero;
+#endif
 
 void __attribute__((naked)) startup()
 {
-	int nData;
-	int nData2;
-	int nZero, nZero2;
 	soc_init();
 	wdt_disable();
 
-	nData = gnData;
-	nZero = gnZero;
+#if (SECTION_CHECK == 1)
+	int nDataBefore;
+	int nBssBefore;
 
+	nDataBefore = gnData;
+	nBssBefore = gnZero;
+#endif
 	// bootloader load non-zero (.data) area from flash.
 //	memcpy(&sdata, &_data_lma, &edata - &sdata);
 	memset(&sbss, 0, &ebss - &sbss);
 
-	nData2 = gnData;
-	nZero2 = gnZero;
-
 	ets_install_uart_printf();
-	mydelay(10000000);
+	delay_ms(1000);
 
 	gpio_output(LED0);
 	gpio_output(LED1);
 	gpio_toggle(LED0);
 
+#if (SECTION_CHECK == 1)
+	printf("\n\nBuilt Time : %s %s\n", __DATE__, __TIME__);
+	printf("data %p ~ %p, bss: %p ~ %p\n", &sdata, &edata, &sbss, &ebss);
+
+	printf("DAT5 Addr: %p, Value: %X -> %X\n", &gnData, nDataBefore, gnData);
+	printf("BSS Addr: %p, Value: %X -> %X\n", &gnZero, nBssBefore, gnZero);
+
+	printf("Data: %X @ %X\n", gnSData, &gnSData);
+	printf("BSS : %X @ %X\n", gnSBss, &gnSBss);
+	printf("Const: %X @ %X\n", gnConst, &gnConst);
+#endif
+
 	int nCnt = 0;
-	while (nCnt < 10)
+	while (nCnt < 4)
 	{
 		gpio_toggle(LED0);
 		gpio_toggle(LED1);
-		mydelay(1000000);
-		ets_printf("\t\tSeq: %d\n", nCnt++);
-		ets_printf("DAT5 %X -> %X, ZI %X -> %X\n", 
-					nData, nData2, nZero, nZero2);
-		ets_printf("sdata %X %d, sbss: %X, %d\n",
-				&sdata, &edata - &sdata, &sbss, &ebss - &sbss);
-
-		ets_printf("gnData %X, gnZero: %X\n", &gnData, &gnZero);
+		delay_ms(1000);
+		printf("\t\tTest Loop with LED: %d\n", nCnt++);
 	}
 
 	main();
 }
 
-__attribute__((interrupt("machine"))) void EXC_IRQHandler()
+
+__attribute__((interrupt("machine"))) void EXC_Handler()
 {
 	uint32_t nSrc;
 	asm("csrr %0, mcause" : "=r"(nSrc));
@@ -139,7 +127,6 @@ __attribute__((interrupt("machine"))) void EXC_IRQHandler()
 		case 5: // Load access fault.
 		case 6: // Store/AMO addr misaligned.
 		case 7: // Store/AMO access fault.
-		default:
 		{
 			uint32_t nMem;
 			asm("csrr %0, mbadaddr" : "=r"(nMem));
@@ -162,6 +149,13 @@ __attribute__((interrupt("machine"))) void EXC_IRQHandler()
 			// WCH Fast interrupt때문에 parameter return은 안됨.
 			uint32_t nRet = 0xFABC;
 			asm volatile("add a0, %0, zero" ::"r"(nRet));
+			break;
+		}
+		default:
+		{
+			printf("Exception Src:%X, PC:%X\n", nSrc, nPC);
+			while (1)
+				;
 			break;
 		}
 	}

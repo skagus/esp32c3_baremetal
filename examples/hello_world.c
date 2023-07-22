@@ -1,30 +1,19 @@
 #include <stdio.h>
+#include "esp32c3.h"
 
 #define printf(...) 	ets_printf(__VA_ARGS__)
 
-
-extern int gnSData;
-
-
-void mydelay(int nCnt)
-{
-	while (--nCnt > 0)
-	{
-		asm("nop\r\n");
-	}
-}
-
-int gnCnt = 30;
+int gnCnt = 8;
 int main(void)
 {
-	int nLoop = 10;
-	mydelay(1000000);
-	printf("Hello World : %s\n", __DATE__);
+	delay_ms(1000);
 
-	while (gnCnt--)
+	int nCnt = 0;
+	while (nCnt < gnCnt)
 	{
-		printf("Loop : %d, %X, %X\n", gnCnt, &gnSData, gnSData);
-		mydelay(1000000);
+		printf("Loop : %d / %d\n", nCnt, gnCnt);
+		delay_ms(100);
+		nCnt++;
 	}
 	while (1);
 	return 0;
