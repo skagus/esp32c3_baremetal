@@ -15,7 +15,7 @@ _vector_table:
 	.option push
 	.option norvc /*Enables or disables the generation of compressed instructions. Instructions are opportunistically compressed by the RISC-V assembler when possible, but sometimes this behavior is not desirable, especially when handling alignments.*/
 	.rept 31
-	j EXC_Handler        /* 31 identical entries, all pointing to the interrupt handler */
+		j EXC_Handler        /* 31 identical entries, all pointing to the interrupt handler */
 	.endr
 	.option pop
 	.size _vector_table, .-_vector_table
