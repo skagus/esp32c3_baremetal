@@ -26,8 +26,8 @@ ASRC =	esp32c3/boot.S \
 
 DATA =
 
-LINK_SCRIPT = esp32c3/common.ld \
-			esp32c3/romfuncs.ld
+LINK_SCRIPT = esp32c3/sections.ld \
+			esp32c3/rom_ref.ld
 
 ################ Object ##############
 OBJ =	$(CSRC:%.c=$(OBJDIR)/%.c.o) \
@@ -295,6 +295,10 @@ size: $(TARGET).elf
 # esptool.py --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin
 # esptool.py --chip esp32c3 -p COM17 write_flash --flash_freq 20m --flash_mode dio 0 $(TARGET).bin
 # DoNotChgBin in download tool.
+
+prog: $(TARGET).elf
+	@echo "Bin Making idf> esptool.py --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 20m $(TARGET).elf"
+	@echo "FW download idf> esptool.py --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin"
 
 # Display compiler version information.
 gccversion : 

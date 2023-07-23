@@ -11,8 +11,6 @@
 		la		t0, _vector_table
 		ori		t0, t0, 1
 		csrw	mtvec, t0
-		csrs	mstatus, t0
-		csrw	mstatus, 0x8 /* Interrupt enable */
 
 		.option push
 		.option norelax

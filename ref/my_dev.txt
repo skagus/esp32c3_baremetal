@@ -1,0 +1,4 @@
+Chip is ESP32-C3 (revision v0.3)
+
+ESP-ROM:esp32c3-api1-20210207
+Build:Feb  7 2021

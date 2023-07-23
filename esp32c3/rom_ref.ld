@@ -6,6 +6,50 @@
  * Compatible with ROM where ECO version equal or greater to 0.
  */
 
+/**
+Base address define is good for disassembly view even you don't use this symbol in the code.
+Actually, It is not mendatory for building FW.
+*/
+C3_UART 				= 0x60000000;
+C3_SPI1 				= 0x60002000;
+C3_SPI0 				= 0x60003000;
+C3_GPIO 				= 0x60004000;
+C3_TIMER 				= 0x60007000;
+C3_LOWPOWER				= 0x60008000;
+C3_IO_MUX 				= 0x60009000;
+C3_UART1 				= 0x60010000;
+C3_I2C_EXT 				= 0x60013000;
+C3_UHCI0 				= 0x60014000;
+C3_REMOT				= 0x60016000;
+C3_LEDC 				= 0x60019000;
+C3_EFUSEC 				= 0x6001A000;
+C3_TIMERGRP0 			= 0x6001F000;
+C3_TIMERGRP1 			= 0x60020000;
+C3_SYSTIMER 			= 0x60023000;
+C3_SPI2 				= 0x60024000;
+C3_APB_CTRL 			= 0x60026000;
+C3_TWAI 				= 0x6002B000;
+C3_I2S0 				= 0x6002D000;
+C3_AES 					= 0x6003A000;
+C3_SHA 					= 0x6003B000;
+C3_RSA 					= 0x6003C000;
+C3_DIGITAL_SIGNATURE 	= 0x6003D000;
+C3_HMAC 				= 0x6003E000;
+C3_GDMA 				= 0x6003F000;
+C3_ADC		 			= 0x60040000;
+C3_USB_JTAG	 			= 0x60043000;
+C3_SYSTEM 				= 0x600C0000;
+C3_SENSITIVE			= 0x600C1000;
+C3_INTERRUPT			= 0x600C2000;
+C3_CACHE				= 0x600C4000;
+C3_EXT_MEM_AES			= 0x600CC000;
+C3_ASSIST_DEBUG 		= 0x600CE000;
+C3_WORLD_CTRL			= 0x600D0000;
+C3_WORLD_CNTL 			= 0x600D0000;
+C3_DPORT_END 			= 0x600D3FFC;
+
+
+
 /***************************************
  Group libgcc
  ***************************************/
@@ -193,6 +237,9 @@ printf = 0x400004a4;
 vfiprintf = 0x400004a8;
 vfprintf = 0x400004ac;
 
+/****************************************
+added by need.
+*****************************************/
 uart_tx_one_char = 0x40000068;
 uart_tx_flush = 0x40000080;
 usb_uart_tx_one_char = 0x400008d8;
@@ -203,8 +250,3 @@ ets_printf = 0x40000040;
 
 esp_pp_rom_version_get  = 0x400015b0;
 ets_update_cpu_frequency = 0x40000588;
-
-SYSTEM_REG = 0x600C0000;
-UART0_BASE = 0x60000000;
-LOW_POWER_BASE = 0x60008000;
-

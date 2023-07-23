@@ -3,17 +3,13 @@
 #include <string.h>
 #include <stdlib.h>
 #include "esp32c3.h"
+#include "rom_ref.h"
+
 #define SECTION_CHECK		(0)
 
 #define printf(...)			ets_printf(__VA_ARGS__)
 
-extern int main();
-extern int uart_tx_one_char(char nCh);
-extern int usb_uart_tx_one_char(char nCh);
-extern void disable_default_watchdog();
-extern void uart_tx_flush(uint8_t uart_no);
-extern void ets_install_uart_printf();
-extern int ets_printf(const char *fmt, ...);
+extern int main(void);
 
 extern unsigned char sbss;
 extern unsigned char ebss;
@@ -30,9 +26,10 @@ int gnData = 5;
 int gnZero;
 #endif
 
-void __attribute__((naked)) startup()
+void __attribute__((naked)) startup(void)
 {
 	soc_init();
+	ets_update_cpu_frequency(4); // MHz.
 	wdt_disable();
 
 #if (SECTION_CHECK == 1)
@@ -49,10 +46,6 @@ void __attribute__((naked)) startup()
 	ets_install_uart_printf();
 	delay_ms(1000);
 
-	gpio_output(LED0);
-	gpio_output(LED1);
-	gpio_toggle(LED0);
-
 #if (SECTION_CHECK == 1)
 	printf("\n\nBuilt Time : %s %s\n", __DATE__, __TIME__);
 	printf("data %p ~ %p, bss: %p ~ %p\n", &sdata, &edata, &sbss, &ebss);
@@ -68,8 +61,6 @@ void __attribute__((naked)) startup()
 	int nCnt = 0;
 	while (nCnt < 4)
 	{
-		gpio_toggle(LED0);
-		gpio_toggle(LED1);
 		delay_ms(1000);
 		printf("\t\tTest Loop with LED: %d\n", nCnt++);
 	}
@@ -77,13 +68,17 @@ void __attribute__((naked)) startup()
 	main();
 }
 
+extern bool gbIn;
 
-__attribute__((interrupt("machine"))) void EXC_Handler()
+__attribute__((interrupt("machine"))) void EXC_Handler(void)
 {
 	uint32_t nSrc;
 	asm("csrr %0, mcause" : "=r"(nSrc));
 	uint32_t nPC;
 	asm("csrr %0, mepc":"=r"(nPC));
+
+	gbIn = !gbIn;
+	REG(C3_GPIO + 0x4C) = 0; // Clear GPIO Int status.
 
 	switch (nSrc)
 	{

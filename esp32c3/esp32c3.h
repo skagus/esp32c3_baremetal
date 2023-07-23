@@ -3,12 +3,9 @@
 
 #pragma once
 
-#include <stdarg.h>
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdio.h>
 #include <stdlib.h>
-#include <string.h>
 
 #define BIT(x) ((uint32_t)1U << (x))
 #define REG(x) (*(volatile uint32_t *)(x))
@@ -66,9 +63,9 @@
 #define C3_WORLD_CNTL 			0x600D0000
 #define C3_DPORT_END 			0x600D3FFC
 
-#define GPIO_OUT_EN		(0x20)
-#define GPIO_OUT_FUNC	(0x554)
-#define GPIO_IN_FUNC	(0x154)
+//#define GPIO_OUT_EN		(0x20)
+//#define GPIO_OUT_FUNC	(0x554)
+//#define GPIO_IN_FUNC	(0x154)
 
 // Perform `count` "NOP" operations
 static inline void spin(volatile unsigned long count)
@@ -140,6 +137,35 @@ static inline void wifi_get_mac_addr(uint8_t mac[6])
 }
 #endif
 
+static inline void soc_enable_int(int int_no)
+{
+#define INTERRUPT_CORE0_CPU_INT_ENABLE_REG			(0x104)
+
+	REG(C3_INTERRUPT + INTERRUPT_CORE0_CPU_INT_ENABLE_REG) |= BIT(int_no);
+}
+
+static inline void test_ecall(void)
+{
+	asm("ecall" ::);
+}
+
+static inline void soc_int(bool b_en)
+{
+	uint32_t nTmp;
+	if(b_en)
+	{
+		asm("csrr %0, mstatus" : "=r"(nTmp));
+		nTmp |= BIT(3);
+		asm("csrw mstatus, %0"::"r"(nTmp));
+	}
+	else
+	{
+		asm("csrr %0, mstatus" : "=r"(nTmp));
+		nTmp &= ~BIT(3);
+		asm("csrw mstatus, %0"::"r"(nTmp));
+	}
+}
+
 static inline void soc_init(void)
 {
 	// Init clock. TRM 6.2.4.1
@@ -147,8 +173,6 @@ static inline void soc_init(void)
 	REG(C3_SYSTEM + 0x8) |= BIT(0) | BIT(2);
 	REG(C3_SYSTEM + 0x58) = BIT(19) | (40U << 12) | BIT(10);
 	// REG(C3_RTCCNTL)[47] = 0; // RTC_APB_FREQ_REG -> freq >> 12
-	((void (*)(int))0x40000588)(4); // ets_update_cpu_frequency(160)
-
 #if 0
   // Configure system clock timer, TRM 8.3.1, 8.9
   REG(C3_TIMERGROUP0)[1] = REG(C3_TIMERGROUP0)[2] = 0UL;  // Reset LO and HI
@@ -159,15 +183,22 @@ static inline void soc_init(void)
 
 // API GPIO
 
+static inline void gpio_int_en(int pin)
+{
+	REG(C3_GPIO + 0x74 + (4 * pin)) |= BIT(7) | BIT(13);// rising edge.
+#define INTERRUPT_CORE0_GPIO_INTERRUPT_PRO_MAP_REG	(0x40)
+	REG(C3_INTERRUPT + INTERRUPT_CORE0_GPIO_INTERRUPT_PRO_MAP_REG) = 9;
+}
+
 static inline void gpio_output_enable(int pin, bool enable)
 {
-	REG(C3_GPIO + GPIO_OUT_EN) &= ~BIT(pin);
-	REG(C3_GPIO + GPIO_OUT_EN) |= (enable ? 1U : 0U) << pin;
+	REG(C3_GPIO + 0x20) &= ~BIT(pin);
+	REG(C3_GPIO + 0x20) |= (enable ? 1U : 0U) << pin;
 }
 
 static inline void gpio_output(int pin)
 {
-	REG(C3_GPIO + GPIO_OUT_FUNC + 4 * pin) = BIT(9) | BIT(7); // Simple out, TRM 5.5.3
+	REG(C3_GPIO + 0x554 + (4 * pin)) = BIT(9) | BIT(7); // Simple out, TRM 5.5.3
 	gpio_output_enable(pin, 1);
 }
 
