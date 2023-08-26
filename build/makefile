@@ -4,7 +4,7 @@ PRJ_TOP = ..
 TARGET = baremetal
 OBJDIR = obj
 
-MCU = rv32imac
+MCU = rv32imac_zicsr
 #MCU =rv64imc
 
 BUILD_STRICT = TRUE
@@ -74,11 +74,8 @@ INCLUDE =	$(patsubst %,-I$(PRJ_TOP)/%,$(PRJ_INC)) \
 #  -Wa,...:      tell GCC to pass this to the assembler.
 #    -adhlns...: create assembler listing
 FLAGS  = -march=$(MCU)
-ifeq ($(MCU),rv32imac)
 FLAGS += -mabi=ilp32
-else
-FLAGS += -mabi=lp64
-endif
+#FLAGS += -mabi=lp64
 FLAGS += -mcmodel=medany
 FLAGS += -msmall-data-limit=8
 FLAGS += -std=gnu99 # c89, c99, gnu89, gnu99
@@ -173,14 +170,11 @@ LDFLAGS += -ffunction-sections
 LDFLAGS += -fdata-sections
 #LDFLAGS += -fsigned-char
 #LDFLAGS += -fno-common
-ifeq ($(MCU),rv32imac)
 LDFLAGS += -mabi=ilp32
-else
-LDFLAGS += -mabi=lp64
-endif
+#LDFLAGS += -mabi=lp64
 ################### Action #################
 # add @ for silent.
-GNU_PRIFIX = riscv-none-embed-
+GNU_PRIFIX = riscv-none-elf-
 
 CC 		= $(GNU_PRIFIX)gcc
 OBJCOPY	= $(GNU_PRIFIX)objcopy
@@ -233,7 +227,7 @@ $(OBJDIR)/%.s.o : $(PRJ_TOP)/%.S
 	$(ASM_MAKE) -c $(ASFLAGS) $< -o $@
 
 ################### File Creation #################
-all: elf bin lst hex size
+all: elf lst hex size
 
 $(PRJ_TOP)/$(VER_FILE):
 	$(INFO)
@@ -286,8 +280,8 @@ lst: $(TARGET).lss $(TARGET).sym
 size: $(TARGET).elf
 	@$(SIZE) --format=gnu $<
 	@$(SIZE) --format=sysv --radix=16 --common $<
-	@echo "Bin Making idf> esptool.py --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 20m $(TARGET).elf"
-	@echo "FW download idf> esptool.py --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin"
+	@echo "Bin Making idf> esptool --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 20m $(TARGET).elf"
+	@echo "FW download idf> esptool --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin"
 #	@echo "FW download --> flash download tool with dio / 20MHz / do not check DoNotChgBin, address 0x0"
 
 # esptool.py --chip esp32c3 image_info $(TARGET).bin
@@ -297,8 +291,8 @@ size: $(TARGET).elf
 # DoNotChgBin in download tool.
 
 prog: $(TARGET).elf
-	@echo "Bin Making idf> esptool.py --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 20m $(TARGET).elf"
-	@echo "FW download idf> esptool.py --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin"
+	esptool --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 20m $(TARGET).elf
+	esptool --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin
 
 # Display compiler version information.
 gccversion : 

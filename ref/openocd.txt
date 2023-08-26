@@ -1,0 +1,8 @@
+ESP32용 open 위치.
+C:\Espressif\tools\openocd-esp32\v0.11.0-esp32-20221026\openocd-esp32\bin
+board : esp32c3-builtin.cfg
+
+일반적인 risc-v gdb 와 esp32 openocd간 문제가 있는 듯. 
+IDF 쪽 gdb/openocd를 사용해도, gdb가 죽음.
+	안정성 문제가 있는 듯..
+
