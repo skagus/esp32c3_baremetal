@@ -12,7 +12,7 @@ MEMORY
 
 SECTIONS
 {
-		/*
+	/*
 	.header : AT(0)
 	{
 		_iram_start = .;

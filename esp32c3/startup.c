@@ -57,14 +57,6 @@ void __attribute__((naked)) startup(void)
 	printf("BSS : %X @ %X\n", gnSBss, &gnSBss);
 	printf("Const: %X @ %X\n", gnConst, &gnConst);
 #endif
-
-	int nCnt = 0;
-	while (nCnt < 4)
-	{
-		delay_ms(1000);
-		printf("\t\tTest Loop with LED: %d\n", nCnt++);
-	}
-
 	main();
 }
 
@@ -77,6 +69,7 @@ __attribute__((interrupt("machine"))) void EXC_Handler(void)
 	uint32_t nPC;
 	asm("csrr %0, mepc":"=r"(nPC));
 
+	printf("In ISR\n");
 	gbIn = !gbIn;
 	REG(C3_GPIO + 0x4C) = 0; // Clear GPIO Int status.
 

@@ -19,7 +19,12 @@
 /*
 		lw		sp, __stack_top
 */
+# B extention Test --> Not supported.
+#		andn   a4, a1, a2
+#		clmulh a4, a1, a2
+#		bclr  a4, a1, a2
+#		sh1add a4, a1, a2
 		j		startup
 
 .L4:
-		j       .L4
+		j		.L4

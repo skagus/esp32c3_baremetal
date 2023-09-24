@@ -4,11 +4,11 @@ PRJ_TOP = ..
 TARGET = baremetal
 OBJDIR = obj
 
-MCU = rv32imac_zicsr
+MCU = rv32imac_zicsr_zba_zbb_zbc_zbs
 #MCU =rv64imc
 
 BUILD_STRICT = TRUE
-BUILD_PRINT = FALSE
+ECHO =   # print command line.
 
 VER_FILE = version.c
 ################ source files ##############
@@ -87,12 +87,13 @@ FLAGS += -fshort-enums
 FLAGS += -fmessage-length=0
 
 FLAGS += -Os
+FLAGS += -flto
 #FLAGS += -msave-restore 
 FLAGS += -ffunction-sections
 FLAGS += -fdata-sections 
 #FLAGS += -fno-unit-at-a-time
 #FLAGS += -mshort-calls
-
+FLAGS += -g
 FLAGS += -Wa,-adhlns=$(@:.o=.lst)
 FLAGS += -gdwarf-2
 FLAGS += -Wno-comment
@@ -114,6 +115,11 @@ CFLAGS  = $(FLAGS)
 CFLAGS += $(DEP_OPT)
 CFLAGS += $(DEFINE)
 CFLAGS += $(INCLUDE)
+# For more information.
+CFLAGS += -fstack-usage  # .su, show stack usage for each function.
+CFLAGS += -fcallgraph-info  # make call graph information.
+#CFLAGS += -fdump-tree-optimized #
+#CFLAGS += -fdump-rtl-all  # 
 
 ################  C++ Options
 CPPFLAGS  = $(FLAGS)
@@ -158,8 +164,9 @@ LDFLAGS += -nostartfiles
 #LDFLAGS += -nodefaultlibs
 #LDFLAGS += -nolibc
 #LDFLAGS += -nostdlib
-LDFLAGS += -Xlinker --gc-sections
-LDFLAGS += -Xlinker --print-memory-usage
+LDFLAGS += -Wl,--gc-sections
+#LDFLAGS += -Wl,--print-gc-sections
+LDFLAGS += -Wl,--print-memory-usage
 LDFLAGS += -march=$(MCU)
 LDFLAGS += --specs=nosys.specs
 #LDFLAGS += --specs=nano.specs
@@ -174,33 +181,18 @@ LDFLAGS += -mabi=ilp32
 #LDFLAGS += -mabi=lp64
 ################### Action #################
 # add @ for silent.
-GNU_PRIFIX = riscv-none-elf-
 
-CC 		= $(GNU_PRIFIX)gcc
-OBJCOPY	= $(GNU_PRIFIX)objcopy
-OBJDUMP	= $(GNU_PRIFIX)objdump
-SIZE	= $(GNU_PRIFIX)size
-AR		= $(GNU_PRIFIX)ar rcs
-NM		= $(GNU_PRIFIX)nm
+CC 		= $(GNU_PREFIX)gcc
+OBJCOPY	= $(GNU_PREFIX)objcopy
+OBJDUMP	= $(GNU_PREFIX)objdump
+SIZE	= $(GNU_PREFIX)size
+AR		= $(GNU_PREFIX)ar rcs
+NM		= $(GNU_PREFIX)nm
 
 SHELL = sh
 REMOVE = rm -f
 REMOVEDIR = rm -rf
 COPY = cp
-
-ifeq ($(BUILD_PRINT), TRUE)
-# some trick.
-C_MAKE	= $(CC)
-CPP_MAKE= $(CC)
-ASM_MAKE= $(CC)
-ELF_MAKE= $(CC)
-else
-# some trick.
-C_MAKE	= @$(CC)
-CPP_MAKE= @$(CC)
-ASM_MAKE= @$(CC)
-ELF_MAKE= @$(CC)
-endif
 
 INFO 	= @echo Making: $@
 DIR_CHK = @mkdir -p $(@D)
@@ -214,20 +206,24 @@ $(OBJDIR)/%.b.o : $(PRJ_TOP)/%.bin
 $(OBJDIR)/%.c.o : $(PRJ_TOP)/%.c
 	$(INFO)
 	$(DIR_CHK)
-	$(C_MAKE) -c $(CFLAGS) $< -o $@ 
+	$(ECHO)$(CC) -c $(CFLAGS) $< -o $@ 
 
 $(OBJDIR)/%.p.o : $(PRJ_TOP)/%.cpp
 	$(INFO)
 	$(DIR_CHK)
-	$(CPP_MAKE) -c $(CPPFLAGS) $< -o $@ 
+	$(ECHO)$(CC) -c $(CPPFLAGS) $< -o $@ 
 
 $(OBJDIR)/%.s.o : $(PRJ_TOP)/%.S
 	$(INFO)
 	$(DIR_CHK)
-	$(ASM_MAKE) -c $(ASFLAGS) $< -o $@
+	$(ECHO)$(CC) -c $(ASFLAGS) $< -o $@
 
 ################### File Creation #################
 all: elf lst hex size
+
+clean: clean_obj clean_target
+
+relink: clean_target elf lst hex size
 
 $(PRJ_TOP)/$(VER_FILE):
 	$(INFO)
@@ -236,32 +232,32 @@ $(PRJ_TOP)/$(VER_FILE):
 %.elf: $(OBJ)
 	$(INFO)
 	$(DIR_CHK)
-	$(ELF_MAKE) $(LDFLAGS) $^ $(LIB_OPT) -o $@ 
+	$(ECHO)$(CC) $(LDFLAGS) $^ $(LIB_OPT) -o $@ 
 
 %.hex: %.elf
 	$(INFO)
 	$(DIR_CHK)
-	$(OBJCOPY) -O ihex  $< $@
+	$(ECHO)$(OBJCOPY) -O ihex  $< $@
 
 %.bin: %.elf
 	$(INFO)
 	$(DIR_CHK)
-	$(OBJCOPY) -O binary $< $@
+	$(ECHO)$(OBJCOPY) -O binary $< $@
 
 %.lss: %.elf
 	$(INFO)
 	$(DIR_CHK)
-	$(OBJDUMP) -h -S -z $< > $@
+	$(ECHO)$(OBJDUMP) -h -S -z $< > $@
 
 %.sym: %.elf
 	$(INFO)
 	$(DIR_CHK)
-	$(NM) -n $< > $@
+	$(ECHO)$(NM) -n $< > $@
 
 %.a: $(OBJ)
 	$(INFO)
 	$(DIR_CHK)
-	$(AR) $@ $^
+	$(ECHO)$(AR) $@ $^
 
 ################ Actions.
 TARGET_ALL=	$(TARGET).elf $(TARGET).a \
@@ -280,7 +276,7 @@ lst: $(TARGET).lss $(TARGET).sym
 size: $(TARGET).elf
 	@$(SIZE) --format=gnu $<
 	@$(SIZE) --format=sysv --radix=16 --common $<
-	@echo "Bin Making idf> esptool --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 20m $(TARGET).elf"
+	@echo "Bin Making idf> esptool --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 40m $(TARGET).elf"
 	@echo "FW download idf> esptool --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin"
 #	@echo "FW download --> flash download tool with dio / 20MHz / do not check DoNotChgBin, address 0x0"
 
@@ -291,18 +287,20 @@ size: $(TARGET).elf
 # DoNotChgBin in download tool.
 
 prog: $(TARGET).elf
-	esptool --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 20m $(TARGET).elf
-	esptool --chip esp32c3 -p COM17 write_flash 0 $(TARGET).bin
+	esptool --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 40m $(TARGET).elf
+	esptool --chip esp32c3 -p COM9 write_flash 0 $(TARGET).bin
 
 # Display compiler version information.
 gccversion : 
 	$(CC) --version
 
-clean:
+clean_target:
 	$(REMOVE) $(TARGET).elf $(TARGET).a \
 			$(TARGET).hex $(TARGET).bin \
 			$(TARGET).lss $(TARGET).sym \
 			$(TARGET).map
+
+clean_obj:
 	$(REMOVEDIR) $(OBJDIR)
 
 # Include the dependency files.

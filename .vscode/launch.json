@@ -1,0 +1,29 @@
+{
+	// IntelliSense를 사용하여 가능한 특성에 대해 알아보세요.
+	// 기존 특성에 대한 설명을 보려면 가리킵니다.
+	// 자세한 내용을 보려면 https://go.microsoft.com/fwlink/?linkid=830387을(를) 방문하세요.
+	"version": "0.2.0",
+	"configurations":
+	[
+		{
+			"name": "OpenOCD",
+			"type": "gdb",
+			"request": "attach",
+			"executable": "build/baremetal.elf",
+			"remote": true,
+			"target": ":3333",
+			"cwd": "${workspaceRoot}",
+//			"gdbpath": "C:/Apps/gcc_riscv/bin/riscv-none-elf-gdb",
+			"gdbpath": "C:/Espressif/tools/riscv32-esp-elf-gdb/11.2_20220823/riscv32-esp-elf-gdb/bin/riscv32-esp-elf-gdb-no-python",
+			"autorun": [
+				"set mem inaccessible-by-default off",
+				"set architecture riscv:rv32",
+				"set remotetimeout unlimited",
+				"interrupt",
+				"monitor reset halt",
+				"load",
+				"break main",
+			]
+		},
+	]
+}
