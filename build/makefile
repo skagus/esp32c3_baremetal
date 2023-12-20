@@ -12,15 +12,16 @@ BUILD_STRICT = TRUE
 BUILD_PRINT = FALSE
 
 OPTI = -O0
-VER_STRING = $$(date +%Y%m%d_%H%M%S)_$(OPTI)
+VER_STRING = $$(date_time +%Y%m%d_%H%M%S)_$(OPTI)
 
 LINK_SCRIPT = esp32c3/sections.ld \
 			esp32c3/rom_ref.ld
 
 ################  Define
-DEFINE =
-#DEFINE += -DWCH_INT
-DEFINE += -D__riscv__
+DEFINE = \
+	__riscv__
+
+#	WCH_INT
 
 ################  Library directory.
 PRJ_LIB_DIR = driver
