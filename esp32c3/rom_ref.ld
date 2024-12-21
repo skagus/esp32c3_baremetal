@@ -250,3 +250,5 @@ ets_printf = 0x40000040;
 
 esp_pp_rom_version_get  = 0x400015b0;
 ets_update_cpu_frequency = 0x40000588;
+
+disable_default_watchdog = 0x400000a4;

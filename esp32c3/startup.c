@@ -26,12 +26,38 @@ int gnData = 5;
 int gnZero;
 #endif
 
+
+typedef struct _TmpSt
+{
+	unsigned int nField1 : 13;
+	unsigned int nField2 : 4;
+	unsigned int nField3 : 5;
+	unsigned int nField4 : 7;
+	unsigned int nField5 : 2;
+	unsigned int nField6 : 1;
+} TmpSt;
+int gTmp = 10;
+TmpSt test()
+{
+	TmpSt stTest;
+	stTest.nField1 = gTmp;
+	stTest.nField2 = gTmp;
+	stTest.nField3 = gTmp;
+	stTest.nField4 = gTmp;
+	stTest.nField5 = gTmp;
+	stTest.nField6 = gTmp;
+	
+	return stTest;
+}
+void disable_default_watchdog();
 void __attribute__((naked)) startup(void)
 {
+
 	soc_init();
 	ets_update_cpu_frequency(4); // MHz.
-	wdt_disable();
+	disable_default_watchdog();
 
+	TmpSt stT = test();
 #if (SECTION_CHECK == 1)
 	int nDataBefore;
 	int nBssBefore;
@@ -39,6 +65,7 @@ void __attribute__((naked)) startup(void)
 	nDataBefore = gnData;
 	nBssBefore = gnZero;
 #endif
+
 	// bootloader load non-zero (.data) area from flash.
 //	memcpy(&sdata, &_data_lma, &edata - &sdata);
 	memset(&sbss, 0, &ebss - &sbss);
@@ -69,7 +96,7 @@ __attribute__((interrupt("machine"))) void EXC_Handler(void)
 	uint32_t nPC;
 	asm("csrr %0, mepc":"=r"(nPC));
 
-	printf("In ISR\n");
+	printf("In ISR %X\n", nPC);
 	gbIn = !gbIn;
 	REG(C3_GPIO + 0x4C) = 0; // Clear GPIO Int status.
 

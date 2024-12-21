@@ -11,9 +11,9 @@ VER_FILE = version.h
 
 ################ Object ##############
 OBJ =	$(CSRC:%.c=$(OBJDIR)/%.c.o) \
-		$(CPPSRC:%.cpp=$(OBJDIR)/%.p.o) \
-		$(ASRC:%.S=$(OBJDIR)/%.s.o) \
-		$(DATA:%.bin=$(OBJDIR)/%.b.o)
+		$(CPPSRC:%.cpp=$(OBJDIR)/%.cpp.o) \
+		$(ASRC:%.S=$(OBJDIR)/%.S.o) \
+		$(DATA:%=$(OBJDIR)/%.data.o)
 
 LST =	$(OBJ:%.o=%.lst)
 
@@ -124,7 +124,7 @@ LDFLAGS += -nostartfiles
 #LDFLAGS += -nodefaultlibs
 LDFLAGS += -nolibc
 #LDFLAGS += -nostdlib
-LDFLAGS += -Wl,--gc-sections
+#LDFLAGS += -Wl,--gc-sections
 #LDFLAGS += -Wl,--print-gc-sections
 LDFLAGS += -Wl,--print-memory-usage
 LDFLAGS += -march=$(MCU)
@@ -151,6 +151,7 @@ OBJDUMP	= $(GNU_PREFIX)objdump
 SIZE	= $(GNU_PREFIX)size
 AR		= $(GNU_PREFIX)ar rcs
 NM		= $(GNU_PREFIX)nm
+LD		= $(GNU_PREFIX)ld
 
 SHELL = sh
 REMOVE = rm -f
@@ -161,22 +162,23 @@ INFO 	= @echo Making: $@
 DIR_CHK = @mkdir -p $(@D)
 
 ################ Object file
-$(OBJDIR)/%.b.o : $(PRJ_TOP)/%.bin
+$(OBJDIR)/%.data.o : $(PRJ_TOP)/%
 	$(INFO)
 	$(DIR_CHK)
-	$(OBJCOPY) -I binary -O elf32 $< $@
+	$(LD) -r -b binary -o $@ $<
+	$(OBJCOPY) --rename-section .data=.rodata.$< $@
 
 $(OBJDIR)/%.c.o : $(PRJ_TOP)/%.c
 	$(INFO)
 	$(DIR_CHK)
 	$(ECHO)$(CC) -c $(CFLAGS) $< -o $@ 
 
-$(OBJDIR)/%.p.o : $(PRJ_TOP)/%.cpp
+$(OBJDIR)/%.cpp.o : $(PRJ_TOP)/%.cpp
 	$(INFO)
 	$(DIR_CHK)
 	$(ECHO)$(CC) -c $(CPPFLAGS) $< -o $@ 
 
-$(OBJDIR)/%.s.o : $(PRJ_TOP)/%.S
+$(OBJDIR)/%.S.o : $(PRJ_TOP)/%.S
 	$(INFO)
 	$(DIR_CHK)
 	$(ECHO)$(CC) -c $(ASFLAGS) $< -o $@
@@ -217,7 +219,7 @@ $(PRJ_TOP)/$(VER_FILE):
 %.lss: %.elf
 	$(INFO)
 	$(DIR_CHK)
-	$(ECHO)$(OBJDUMP) -h -S -z -w $< > $@
+	$(ECHO)$(OBJDUMP) -x -S -s -z -w $< > $@
 
 %.sym: %.elf
 	$(INFO)

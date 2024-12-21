@@ -9,9 +9,9 @@ MCU = rv32imac_zicsr_zba_zbb_zbc_zbs
 #MCU =rv64imc
 
 BUILD_STRICT = TRUE
-BUILD_PRINT = FALSE
+BUILD_PRINT = TRUE
 
-OPTI = -O0
+OPTI = -Os
 VER_STRING = $$(date_time +%Y%m%d_%H%M%S)_$(OPTI)
 
 LINK_SCRIPT = esp32c3/sections.ld \
@@ -52,10 +52,13 @@ CPPSRC =
 ASRC =	esp32c3/boot.S \
 		esp32c3/vector.S
 
-DATA =
+DATA = \
+		examples/data.txt
 
 include rules.mk
 
 prog: $(TARGET).elf
 	esptool --chip esp32c3 elf2image --flash_mode dio --flash_size 4MB --flash_freq 40m $(TARGET).elf
-	esptool --chip esp32c3 -p COM9 write_flash 0 $(TARGET).bin
+	esptool --chip esp32c3 -p COM13 write_flash 0 $(TARGET).bin
+
+#	esptool --chip esp32c3 -p COM13 --before default_reset --after hard_reset write_flash -z --flash_mode keep --flash_freq keep --flash_size keep 0 $(TARGET).bin
