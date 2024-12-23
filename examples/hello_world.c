@@ -23,7 +23,7 @@ int main(void)
 {
 	delay_ms(1000);
 
-#if 0
+#if 1
 	gpio_output(LED0);
 	gpio_output(LED1);
 
@@ -40,7 +40,7 @@ int main(void)
 	soc_int(true);
 #endif
 
-	printf("ROM Version : %X\n", esp_pp_rom_version_get());
+	printf("Hello\n");// : %X\n", esp_pp_rom_version_get());
 
 	int nCnt = 0;
 	while (nCnt < gnCnt)
@@ -49,13 +49,14 @@ int main(void)
 		delay_ms(1000);
 		nCnt++;
 	}
+#if 1
 	char* ptr = & _binary____examples_data_txt_start;
 	while(ptr < &_binary____examples_data_txt_end)
 	{
 		printf("%c", *ptr);
 		ptr++;
 	}
-
+#endif
 	uint32_t bmPrvIS = 0;
 	uint32_t bmIS = 0;
 	while (1)

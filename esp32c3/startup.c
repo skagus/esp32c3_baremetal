@@ -49,13 +49,14 @@ TmpSt test()
 	
 	return stTest;
 }
-void disable_default_watchdog();
+
 void __attribute__((naked)) startup(void)
 {
-
 	soc_init();
-	ets_update_cpu_frequency(4); // MHz.
-	disable_default_watchdog();
+	ets_update_cpu_frequency(8); // MHz.
+
+	wdt_disable();
+//	disable_default_watchdog();
 
 	TmpSt stT = test();
 #if (SECTION_CHECK == 1)
@@ -144,7 +145,7 @@ __attribute__((interrupt("machine"))) void EXC_Handler(void)
 		case 7: // Store/AMO access fault.
 		{
 			uint32_t nMem;
-			asm("csrr %0, mbadaddr" : "=r"(nMem));
+			asm("csrr %0, mtval" : "=r"(nMem));
 			printf("Data Fault:%X, PC:%X, Mem:%X\n", nSrc, nPC, nMem);
 			while (1)
 				;

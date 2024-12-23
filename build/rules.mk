@@ -15,10 +15,6 @@ OBJ =	$(CSRC:%.c=$(OBJDIR)/%.c.o) \
 		$(ASRC:%.S=$(OBJDIR)/%.S.o) \
 		$(DATA:%=$(OBJDIR)/%.data.o)
 
-LST =	$(OBJ:%.o=%.lst)
-
-DEP =	$(OBJ:%.o=%.d)
-
 DEF_OPT =	$(patsubst %,-D%,$(DEFINE))
 
 LIB_OPT =	$(patsubst %,-L$(PRJ_TOP)/%,$(PRJ_LIB_DIR)) \
